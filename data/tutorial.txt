@@ -1,0 +1,33 @@
+Signing the packages
+/opt/keys_gen.sh "RobotnikAutomation" "rmartin@robotnik.es" "5eI6DK55AN2Dgicc6UUJ"
+
+Download public key from the server [/usr/share/keyrings/robotnik-keyring.gpg]
+sudo curl -sSL http://192.168.10.112/robotnik.gpg -o /usr/share/keyrings/robotnik-keyring.gpg
+
+Add repository to the sources.list.d [/etc/apt/sources.list.d/robotnik.list]
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/robotnik-keyring.gpg] http://192.168.10.112.com/robot-testing $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/robotnik.list > /dev/null
+
+Create repository
+aptly repo create -architectures="amd64" -comment="Robot packages testing" -distribution="jammy" -component="main" robot-testing-jammy
+
+
+
+
+API
+===
+
+Upload file to the repository robot-testing using test as tmp upload name folder
+curl -u"rmartin:abcd1234" -XPOST -F file=@./ros-humble-ros.deb "http://192.168.10.112/api/files/test"
+curl -u"rmartin:abcd1234" -XPOST "http://192.168.10.112/api/repos/robot-testing-jammy/file/test"
+
+
+Publish repository
+curl -u"rmartin:abcd1234" -XPOST -H 'Content-Type: application/json' --data '{"SourceKind": "local", "Sources": [{"Name": "robot-testing-jammy"}], "Architectures": ["amd64"], "Distribution": "jammy", "Signing": {"Batch": true, "Passphrase": "5eI6DK55AN2Dgicc6UUJ"}}' "http://192.168.10.112/api/publish/robot-testing-jammy"
+
+
+Update repository
+curl -u"rmartin:abcd1234" -XPUT -H 'Content-Type: application/json' --data '{"ForceOverwrite": true, "Signing": {"Batch": true, "Passphrase": "5eI6DK55AN2Dgicc6UUJ"}}' "http://192.168.10.112/api/publish/robot-testing-hehehe/jammy"
+
+
+Drop repository
+curl -u"rmartin:abcd1234" -XDELETE "http://192.168.10.112/api/publish/robot-testing-hehehe/jammy"

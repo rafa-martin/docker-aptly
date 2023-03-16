@@ -6,18 +6,14 @@ services:
       context: ./
       dockerfile: Dockerfile
     restart: always
-
     ports:
-      - 80:80
-
-    # Create aptly-data volume,
-    # otherwise use directory, fe:
-    # - ./aptly-data:/opt/aptly
+      - target: 80
+        host_ip: 0.0.0.0
+        published: 80
+        protocol: tcp
+        mode: host
     volumes:
       - aptly-data:/opt/aptly
-
-    # If want to use additional environments,
-    # you can set them in .env file
 
 volumes:
   aptly-data:
